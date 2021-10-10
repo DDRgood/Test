@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cstring>
+#pragma once
 
 enum LocationStates
 {
@@ -14,7 +16,7 @@ enum Signal
     STOP_MOVE,
     OPEN_DOOR,
     CLOSE_DOOR
-}
+};
 
 class Train
 {
@@ -22,14 +24,18 @@ class Train
         enum LocationStates location;
         bool doorIsOpen;
         bool isMoving;
-        bool checkState();
         bool toggleState(Signal signal);
 
     public:
-        Train(LocationStates state, bool door, bool move);
+        Train(LocationStates state);
         Train();
         bool openDoor();
-        void closeDoor();
+        bool closeDoor();
         bool startMove();
-        void stopMove();
+        bool stopMove();
+        friend std::ostream& operator<<(std::ostream& stream, Train& obj);
+        std::string getLocationStr();
+        bool getDoorIsOpen();
+        bool getIsMoving();
+        LocationStates getLocationState();
 };

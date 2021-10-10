@@ -26,11 +26,6 @@ Train::Train(LocationStates state)
     }
 }
 
-
-bool Train::checkState()
-{  
-}
-
 Train::Train()
     : location(LocationStates::AT_STATION_OPEN), doorIsOpen(true), isMoving(false)
 {}
@@ -44,7 +39,6 @@ bool Train::toggleState(Signal signal)
         case LocationStates::IN_TUNNEL_MOVE:
         case LocationStates::IN_TUNNEL_STOP:
             return false;
-            break;
         case LocationStates::AT_STATION_CLOSE:
             location = LocationStates::AT_STATION_OPEN;
             doorIsOpen = true;
@@ -69,16 +63,16 @@ bool Train::toggleState(Signal signal)
         {
         case LocationStates::AT_STATION_CLOSE:
             location = LocationStates::IN_TUNNEL_MOVE;
+            isMoving = true;
             return true;
-            break;
         case LocationStates::AT_STATION_OPEN:
             return false;
-            break;
         case LocationStates::IN_TUNNEL_MOVE:
+            isMoving = false;
             location = LocationStates::AT_STATION_CLOSE;
             return true;
-            break;
         case LocationStates::IN_TUNNEL_STOP:
+            isMoving = true;
             location = LocationStates::IN_TUNNEL_MOVE;
             return true;
         default:
@@ -87,9 +81,13 @@ bool Train::toggleState(Signal signal)
     }
     else if (signal == Signal::STOP_MOVE)
     {
-
+        if (location == LocationStates::IN_TUNNEL_MOVE){
+            location = LocationStates::IN_TUNNEL_STOP;
+            isMoving = false;
+        }
+        return true;
     }
-    else{}
+    return false;
 }
 
 bool Train::openDoor()
@@ -97,19 +95,58 @@ bool Train::openDoor()
     return this->toggleState(Signal::OPEN_DOOR);
 }
 
-void Train::closeDoor()
+bool Train::closeDoor()
 {
-    doorIsOpen = false;
+    return this->toggleState(Signal::CLOSE_DOOR);
 }
 
 bool Train::startMove()
 {
-    if (doorIsOpen) return false;
-    else isMoving = true;
-    return true;
+    return this->toggleState(Signal::START_MOVE);
 }
 
-void Train::stopMove()
+bool Train::stopMove()
 {
-    isMoving = false;
+    return this->toggleState(Signal::STOP_MOVE);
+}
+
+
+std::string Train::getLocationStr()
+{
+    switch (this->location)
+    {
+    case LocationStates::AT_STATION_CLOSE:
+    case LocationStates::AT_STATION_OPEN:
+        return "at station";
+    case LocationStates::IN_TUNNEL_MOVE:
+    case LocationStates::IN_TUNNEL_STOP:
+        return "in tunnel";
+    default:
+        return "";
+    }
+}
+
+std::ostream& operator<<(std::ostream& stream, Train& obj)
+{
+    stream << "Status: \n";
+    stream << "\t door open: " << std::boolalpha << obj.doorIsOpen << "\n";
+    stream << "\t train move: " << std::boolalpha << obj.isMoving << "\n";
+    stream << "\t location: " << obj.getLocationStr() << "\n";
+    return stream;
+}
+
+
+bool Train::getDoorIsOpen()
+{
+    return doorIsOpen;
+}
+
+bool Train::getIsMoving()
+{   
+    return isMoving;
+}
+
+LocationStates Train::getLocationState()
+{
+    return location;
 }
